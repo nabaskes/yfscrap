@@ -5,7 +5,8 @@ my_stock = Stock('CMG')
 print(f"The current value of {my_stock.ticker_symbol} is: ", end="")
 print(my_stock.price)
 print("")
-print("Millenials love their burritos!") ```
+print("Millenials love their burritos!") 
+```
 
 ### Installation
 
