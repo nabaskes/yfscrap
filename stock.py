@@ -47,6 +47,15 @@ class Stock:
         if hasattr(self, '_open_price'):
             del self._days_range
 
+        if hasattr(self, '_years_range'):
+            del self._years_range
+
+        if hasattr(self, '_volume'):
+            del self._volume
+
+        if hasattr(self, "_avg_volume"):
+            del self._avg_volume
+
     @try_property
     def price(self):
         "gets the price of the stock"
@@ -96,9 +105,38 @@ class Stock:
     def days_range(self):
         'a tuple of high and low for the stock today'
         if not hasattr(self, '_days_range'):
-            self._days_range = tuple(self.html_resp.html.find('[data\-test=DAYS\_RANGE\-value]')[0].text.split(" - "))
+            self._days_range = tuple(map(float,
+                                         self.html_resp.html.find('[data\-test=DAYS\_RANGE\-value]')[0].text.split(" - ")))
         return self._days_range
 
 
+    @try_property
+    def years_range(self):
+        'a tuple of high and low for the stock in the last 52 weeks'
+        if not hasattr(self, '_years_range'):
+            self._years_range = tuple(map(float,
+                                          self.html_resp.html.find('[data\-\test=FIFTY\_TWO\_WK\_RANGE\-value]')[0].text.split(" - ")))
+        return self._years_range
+
+    @try_property
+    def volume(self):
+        'volume for the stock'
+        if not hasattr(self, '_volume'):
+            self._volume = int(next(
+                filter(lambda x: x.attrs.get('data-reactid') == '71',
+                       self.html_resp.html.find(
+                           '.Trsdu\(0\.3s\)'))).text.replace(",", ""))
+        return self._volume
+
+    @try_property
+    def avg_volume(self):
+        'avg volume for the stock'
+        if not hasattr(self, '_avg_volume'):
+            self._avg_volume = int(next(filter(
+                lambda x: x.attrs.get('data-reactid') == '76',
+                self.html_resp.html.find(
+                    '.Trsdu\(0\.3s\)'))).text.replace(",", ""))
+        return self._avg_volume
+
 if __name__ == "__main__":
-    print(Stock('VTEB').days_range)
+    print(Stock('BAC').avg_volume)
