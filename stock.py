@@ -56,6 +56,32 @@ class Stock:
         if hasattr(self, "_avg_volume"):
             del self._avg_volume
 
+        if hasattr(self, "_net_assets"):
+            del self._net_assets
+
+        if hasattr(self, "_price_to_earnings"):
+            del self._price_to_earnings
+
+        if hasattr(self, '_pct_yield'):
+            del self._pct_yield
+
+        if hasattr(self, '_five_year_average_return'):
+            del self._five_year_average_return
+
+        if hasattr(self, '_holdings_turnover'):
+            del self._holdings_turnover
+
+        if hasattr(self, '_last_dividend'):
+            del self._last_dividend
+
+        if hasattr(self, '_inception_date'):
+            del self._inception_date
+
+        if hasattr(self, '_average_for_category'):
+            del self._average_for_category
+
+
+
     @try_property
     def price(self):
         "gets the price of the stock"
@@ -137,6 +163,100 @@ class Stock:
                 self.html_resp.html.find(
                     '.Trsdu\(0\.3s\)'))).text.replace(",", ""))
         return self._avg_volume
+
+    @try_property
+    def net_assets(self):
+        'net assets for an etf or mutual fund'
+        if not hasattr(self, '_net_assets'):
+            self._net_assets = utils.convert_text_multiplier(
+                next(filter(
+                    lambda x: x.attrs.get('data-reactid') == '82',
+                    self.html_resp.html.find(
+                        '.Trsdu\(0\.3s\)'
+                    )
+                )))
+        return self._net_assets
+
+    @try_property
+    def price_to_earnings(self):
+        'gets trailing-twelve-months price to earnings ratio for a stock'
+        if not hasattr(self, '_price_to_earnings'):
+            self._price_to_earnings = float(next(filter(
+                lambda x: x.attrs.get('data-reactid') == '92',
+                self.html_resp.html.find('.Trsdu\(0\.3s\)')
+            )))
+        return self._price_to_earnings
+
+    @try_property
+    def pct_yield(self):
+        'gets percentage yield of an etf or mutual fund'
+        if not hasattr(self, '_pct_yield'):
+            self._pct_yield = float(next(filter(
+                lambda x: x.attrs.get('data-reactid') == '90',
+                self.html_resp.html.find('.Trsdu\(0\.3s\)')
+            )).replace("%", ""))
+        return self._pct_yield
+
+    @try_property
+    def five_year_average_return(self):
+        'five year average return for a mutual fund'
+        if not hasattr(self, '_five_year_average_return'):
+            self._five_year_average_return = float(next(filter(
+                lambda x: x.attrs.get('data-reactid') == '95',
+                self.html_resp.html.find('.Trsdu\(0\.3s\)')
+            )))
+        return self._five_yar_average_return
+
+    @try_property
+    def holdings_turnover(self):
+        'holdings turnover for a mutual fund or ETF'
+        if not hasattr(self, '_holdings_turnover'):
+            self._holdings_turnover = float(next(filter(
+                lambda x: x.attrs.get('data-reactid') == '100',
+                self.html_resp.html.find('.Trsdu\(0\.3s\)')
+            )).replace("%", ""))
+        return self._holdings_turnover
+
+    @try_property
+    def last_dividend(self):
+        'last dividend from a mutual fund'
+        if not hasattr(self, '_last_dividend'):
+            self._last_dividend = float(next(filter(
+                lambda x: x.attrs.get('data-reactid') == '105',
+                self.html_resp.html.find('.Trsdu\(0\.3s\)')
+            )))
+        return self._last_dividend
+
+    @try_property
+    def average_for_category(self):
+        'average for category in mutual fund'
+        if not hasattr(self, '_average_for_category'):
+            self._average_for_category = float(next(filter(
+                lambda x: x.attrs.get('data-reactid') == '109',
+                self.html_resp.html.find('.Trsdu\(0\.3s\)')
+            )))
+        return self._average_for_category
+
+    @try_property
+    def inception_date(self):
+        'inception date of a mutual fund'
+        if not hasattr(self, '_inception_date'):
+            import calendar
+            import datetime
+            unparsed_date = next(filter(
+                lambda x: x.attrs.get('data-reactid') == '114',
+                self.html_resp.html.find('[data-reactid]')))
+            inc_year = unparsed_date.split(", ")[-1]
+            inc_mon_abbr, inc_day = tuple(
+                unparsed_date.split(", ")[0].split(" "))
+            inc_mon = {v: k for k, v in enumerate(calendar.month_abbr)}[inc_mon_abbr]
+            self._inception_date = datetime.date(inc_year,
+                                                 inc_mon,
+                                                 inc_day)
+        return self._inception_date
+
+
+
 
 if __name__ == "__main__":
     print(Stock('BAC').avg_volume)
