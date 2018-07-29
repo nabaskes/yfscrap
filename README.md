@@ -11,4 +11,4 @@ print("Millenials love their burritos!")
 ### Installation
 
 Just go to your project directory and
-`git clone git@github.com:nabaskes\yfsrap`
+`git clone git@github.com:nabaskes\yfscrap`
