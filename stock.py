@@ -94,7 +94,7 @@ class Stock:
     def daily_change_dollar(self):
         'gets the daily change in the stock in dollars'
         if not hasattr(self, '_daily_change_dollar'):
-            self.get_daily_change()
+            self._get_daily_change()
         return self._daily_change_dollar
 
     @try_property
@@ -141,7 +141,7 @@ class Stock:
         'a tuple of high and low for the stock in the last 52 weeks'
         if not hasattr(self, '_years_range'):
             self._years_range = tuple(map(float,
-                                          self.html_resp.html.find('[data\-\test=FIFTY\_TWO\_WK\_RANGE\-value]')[0].text.split(" - ")))
+                                          self.html_resp.html.find('[data\-test=FIFTY\_TWO\_WK\_RANGE\-value]')[0].text.split(" - ")))
         return self._years_range
 
     @try_property
@@ -168,13 +168,19 @@ class Stock:
     def net_assets(self):
         'net assets for an etf or mutual fund'
         if not hasattr(self, '_net_assets'):
-            self._net_assets = utils.convert_text_multiplier(
-                next(filter(
+            net_assets = list(filter(
                     lambda x: x.attrs.get('data-reactid') == '82',
                     self.html_resp.html.find(
                         '.Trsdu\(0\.3s\)'
                     )
-                )))
+                ))
+            if len(net_assets) == 0:
+                self._net_assets = utils.convert_text_multiplier(next(filter(
+                    lambda x: x.attrs.get('data-reactid') == '80',
+                    self.html_resp.html.find('.Trsdu\(0\.3s\)'))).text)
+            else:
+                self._net_assets = utils.convert_text_multiplier(
+                    net_assets[0].text)
         return self._net_assets
 
     @try_property
@@ -184,7 +190,7 @@ class Stock:
             self._price_to_earnings = float(next(filter(
                 lambda x: x.attrs.get('data-reactid') == '92',
                 self.html_resp.html.find('.Trsdu\(0\.3s\)')
-            )))
+            )).text)
         return self._price_to_earnings
 
     @try_property
@@ -194,7 +200,7 @@ class Stock:
             self._pct_yield = float(next(filter(
                 lambda x: x.attrs.get('data-reactid') == '90',
                 self.html_resp.html.find('.Trsdu\(0\.3s\)')
-            )).replace("%", ""))
+            )).text.replace("%", ""))
         return self._pct_yield
 
     @try_property
@@ -204,8 +210,8 @@ class Stock:
             self._five_year_average_return = float(next(filter(
                 lambda x: x.attrs.get('data-reactid') == '95',
                 self.html_resp.html.find('.Trsdu\(0\.3s\)')
-            )))
-        return self._five_yar_average_return
+            )).text)
+        return self._five_year_average_return
 
     @try_property
     def holdings_turnover(self):
@@ -214,7 +220,7 @@ class Stock:
             self._holdings_turnover = float(next(filter(
                 lambda x: x.attrs.get('data-reactid') == '100',
                 self.html_resp.html.find('.Trsdu\(0\.3s\)')
-            )).replace("%", ""))
+            )).text.replace("%", ""))
         return self._holdings_turnover
 
     @try_property
@@ -224,7 +230,7 @@ class Stock:
             self._last_dividend = float(next(filter(
                 lambda x: x.attrs.get('data-reactid') == '105',
                 self.html_resp.html.find('.Trsdu\(0\.3s\)')
-            )))
+            )).text)
         return self._last_dividend
 
     @try_property
@@ -245,14 +251,14 @@ class Stock:
             import datetime
             unparsed_date = next(filter(
                 lambda x: x.attrs.get('data-reactid') == '114',
-                self.html_resp.html.find('[data-reactid]')))
+                self.html_resp.html.find('[data-reactid]'))).text
             inc_year = unparsed_date.split(", ")[-1]
             inc_mon_abbr, inc_day = tuple(
                 unparsed_date.split(", ")[0].split(" "))
             inc_mon = {v: k for k, v in enumerate(calendar.month_abbr)}[inc_mon_abbr]
-            self._inception_date = datetime.date(inc_year,
-                                                 inc_mon,
-                                                 inc_day)
+            self._inception_date = datetime.date(int(inc_year),
+                                                 int(inc_mon),
+                                                 int(inc_day))
         return self._inception_date
 
 
